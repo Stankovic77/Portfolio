@@ -265,9 +265,9 @@ article { display: none; }
     border-radius: 0 15px;
     font-size: 13px;
     color: var(--mycolor);
-    background: var(--mycolor);
+    background: var(--eerie-black2);
     padding: 10px;
-    box-shadow: var(--mycolor);
+    box-shadow: var(--white1);
     transition: var(--transition1);
     z-index: 1;
 }
@@ -399,7 +399,6 @@ a:-webkit-any-link {
 
     .about-text p { 
         margin-bottom: 15px;
-        text-align: justify;
         padding-left: 10px;
         padding-right: 10px;
      }
@@ -1267,6 +1266,7 @@ textarea.form-input {
         margin-bottom: 30px;
     }
 
+
     .form-input { padding: 15px 20px; }
 
     textarea.form-input { margin-bottom: 30px; }
@@ -1491,7 +1491,7 @@ h6 {
 
   @keyframes animated-text{
     from{width: 0;}
-    to{width: 600px;}
+    to{width: 500px;}
   }
   
   /* cursor animations */
@@ -1499,4 +1499,26 @@ h6 {
   @keyframes animated-cursor{
     from{border-right-color: rgba(0,255,0,.75);}
     to{border-right-color: transparent;}
+  }
+
+  .website-counter {
+    background-color: #ff4957;
+    height: 50px;
+    width: 80px;
+    color: rgb(2, 0, 0);
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 25px;
+    margin-top: 10px;
+  }
+  
+  /* Styles for reset button */
+  #reset {
+    margin-top: 20px;
+    background-color: #008cba;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 8px 20px;
+    color: white;
+    border: 0;
   }
