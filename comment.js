@@ -118,19 +118,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 const replyText = replyInput.value.trim();
                 if (replyText) {
                     const reply = {
-                        id: Date.now(),
                         username: currentUser.username,
                         avatar: currentUser.avatar,
                         text: replyText,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp(), // Corrected timestamp usage
                         likes: 0,
                         dislikes: 0,
                         votes: []
                     };
 
-                    // Update Firestore with the new reply
-                    addReplyToFirestore(comment.id, reply);
-                    comment.replies.push(reply); // Update local data
+                    // First step: Add the reply to Firestore without the timestamp
+                    addReplyToFirestore(comment.id, reply)
+                        .then(() => {
+                            // Second step: After adding the reply, update the timestamp for that specific reply
+                            updateReplyTimestamp(comment.id, reply);
+                        });
+
+                    comment.replies.push(reply);  // Update local data
                     renderComments();  // Re-render comments with the new reply
                 }
             });
@@ -147,9 +150,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (comment.replies && comment.replies.length > 0) {
             const repliesDiv = document.createElement('div');
             repliesDiv.classList.add('replies');
-            const sortedReplies = comment.replies.sort((a, b) => b.id - a.id);
+            const sortedReplies = comment.replies.sort((a, b) => b.timestamp - a.timestamp);  // Sort replies by timestamp
             sortedReplies.forEach(reply => {
-                repliesDiv.appendChild(createCommentElement(reply, true)); // Recursive rendering of replies
+                repliesDiv.appendChild(createCommentElement(reply, true));  // Recursive rendering of replies
             });
             commentDiv.appendChild(repliesDiv);
         }
@@ -162,16 +165,19 @@ document.addEventListener('DOMContentLoaded', () => {
         db.collection('comments').doc(commentId).update(updatedComment);
     }
 
-    // Function to add a reply to Firestore
+    // Function to add a reply to Firestore (without timestamp)
     function addReplyToFirestore(commentId, reply) {
+        return db.collection('comments').doc(commentId).update({
+            replies: firebase.firestore.FieldValue.arrayUnion(reply)
+        });
+    }
+
+    // Function to update the reply's timestamp after adding the reply
+    function updateReplyTimestamp(commentId, reply) {
         db.collection('comments').doc(commentId).update({
-            replies: firebase.firestore.FieldValue.arrayUnion(reply),
-        })
-        .then(() => {
-            console.log('Reply added');
-        })
-        .catch((error) => {
-            console.error('Error adding reply: ', error);
+            'replies.$[elem].timestamp': firebase.firestore.FieldValue.serverTimestamp()
+        }, {
+            arrayFilterElements: [{ fieldPath: "replies.username", arrayContains: reply.username }]
         });
     }
 
@@ -227,12 +233,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Call loadComments to load and display comments when the page loads
     loadComments();
-});
-document.addEventListener('DOMContentLoaded', () => {
-    const modalCloseBtn = document.getElementById('modal-close-btn');
-    if (modalCloseBtn) {
-        modalCloseBtn.addEventListener('click', testimonialsModalFunc);
-    } else {
-        console.log('modalCloseBtn not found');
-    }
 });
