@@ -3,14 +3,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const commentInput = document.getElementById('comment-input');
     const commentSection = document.getElementById('comment-section');
     const clearButton = document.getElementById('clear-comments');
-    
-    const db = firebase.firestore(); // Firestore reference
 
-    // Fetch the current user from localStorage or create a new one
+    // Initialize Firestore
+    const db = firebase.firestore(); 
+
+    // Get the current user info from localStorage or create a new anonymous user
     let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
     let usernameCounter = parseInt(localStorage.getItem('usernameCounter')) || 100;
 
-    // If no current user, create an anonymous user
     if (!currentUser) {
         currentUser = {
             username: `Anonymous${usernameCounter++}`,
@@ -30,15 +30,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function createCommentElement(comment, isReply = false) {
         const commentDiv = document.createElement('div');
         commentDiv.classList.add(isReply ? 'reply' : 'comment');
-        
+
         const header = document.createElement('div');
         header.classList.add('comment-header');
-        
+
         const avatar = document.createElement('img');
         avatar.src = comment.avatar;
         avatar.alt = 'Avatar';
         avatar.classList.add('avatar');
-        
+
         const usernameSpan = document.createElement('span');
         usernameSpan.classList.add('username');
         usernameSpan.textContent = comment.username;
@@ -50,13 +50,13 @@ document.addEventListener('DOMContentLoaded', () => {
         header.appendChild(avatar);
         header.appendChild(usernameSpan);
         header.appendChild(timestampSpan);
-        
+
         const content = document.createElement('p');
         content.textContent = comment.text;
 
         const actions = document.createElement('div');
         actions.classList.add('actions');
-        
+
         const likeButton = document.createElement('button');
         likeButton.innerHTML = `👍 ${comment.likes}`;
         likeButton.classList.add('like-btn');
@@ -65,7 +65,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 comment.likes++;
                 comment.votes.push(currentUser.username);
                 updateCommentInFirestore(comment.id, comment);
-                renderComments();
             } else {
                 showVoteMessage(commentDiv, "You already voted!");
             }
@@ -79,7 +78,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 comment.dislikes++;
                 comment.votes.push(currentUser.username);
                 updateCommentInFirestore(comment.id, comment);
-                renderComments();
             } else {
                 showVoteMessage(commentDiv, "You already voted!");
             }
@@ -149,24 +147,26 @@ document.addEventListener('DOMContentLoaded', () => {
         return commentDiv;
     }
 
-    // Fetch comments from Firestore and render them
-    function renderComments() {
-        commentSection.innerHTML = ''; // Clear the section before re-rendering
+    // Function to update the comment in Firestore
+    function updateCommentInFirestore(commentId, updatedComment) {
+        db.collection('comments').doc(commentId).update(updatedComment);
+    }
+
+    // Function to load comments from Firestore
+    function loadComments() {
         db.collection('comments')
             .orderBy('timestamp', 'desc')
-            .onSnapshot((querySnapshot) => {
-                querySnapshot.forEach(doc => {
-                    const data = doc.data();
-                    const comment = {
-                        ...data,
-                        id: doc.id // Include Firestore document ID
-                    };
+            .onSnapshot((snapshot) => {
+                commentSection.innerHTML = '';  // Clear current comments
+                snapshot.forEach((doc) => {
+                    const comment = doc.data();
+                    comment.id = doc.id;  // Add Firestore document ID
                     commentSection.appendChild(createCommentElement(comment));
                 });
             });
     }
 
-    // Add a new comment to Firestore
+    // Function to add a new comment
     commentForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const text = commentInput.value.trim();
@@ -182,15 +182,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 replies: []
             };
 
-            await db.collection('comments').add(newComment);
+            const docRef = await db.collection('comments').add(newComment);
             commentInput.value = '';  // Clear the input field
         }
     });
-
-    // Update a comment in Firestore (e.g., after a like/dislike)
-    function updateCommentInFirestore(commentId, updatedComment) {
-        db.collection('comments').doc(commentId).update(updatedComment);
-    }
 
     // Display a message if the user has already voted
     function showVoteMessage(commentDiv, message) {
@@ -207,9 +202,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2000);
     }
 
-    // Render comments when the page loads (fetch from Firestore)
-    renderComments();
+    // Call loadComments to load and display comments when the page loads
+    loadComments();
 });
+
 
 // Firebase configuration (ensure these values are correct)
 const firebaseConfig = {
