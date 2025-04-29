@@ -4,8 +4,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const commentSection = document.getElementById('comment-section');
     const clearButton = document.getElementById('clear-comments');
 
+    document.addEventListener('DOMContentLoaded', () => {
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        if (modalCloseBtn) {
+            modalCloseBtn.addEventListener('click', testimonialsModalFunc);
+        } else {
+            console.log('modalCloseBtn not found');
+        }
+    });
     // Initialize Firestore
-    const db = firebase.firestore(); 
+    const firebaseConfig = {
+        apiKey: "AIzaSyA-BlB4rTOEMiCRi8ngVnnLVVellWTV69s",
+        authDomain: "mycommentsapp-a08cf.firebaseapp.com",
+        projectId: "mycommentsapp-a08cf",
+        storageBucket: "mycommentsapp-a08cf.appspot.com",
+        messagingSenderId: "1:675866901297:web:9b8c64f9dbfcf90ce34e10",
+        appId: "1:675866901297:web:9b8c64f9dbfcf90ce34e10"
+    };
+    
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    
+    // Initialize Firestore after Firebase is initialized
+    const db = firebase.firestore();
 
     // Get the current user info from localStorage or create a new anonymous user
     let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
@@ -207,12 +228,3 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// Firebase configuration (ensure these values are correct)
-const firebaseConfig = {
-    apiKey: "AIzaSyA-BlB4rTOEMiCRi8ngVnnLVVellWTV69s",
-    authDomain: "mycommentsapp-a08cf.firebaseapp.com",
-    projectId: "mycommentsapp-a08cf",
-    storageBucket: "mycommentsapp-a08cf.appspot.com",
-    messagingSenderId: "1:675866901297:web:9b8c64f9dbfcf90ce34e10",
-    appId: "1:675866901297:web:9b8c64f9dbfcf90ce34e10"
-};
