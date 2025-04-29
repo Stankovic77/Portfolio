@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('modalCloseBtn not found');
         }
     });
+
     // Initialize Firestore
     const firebaseConfig = {
         apiKey: "AIzaSyA-BlB4rTOEMiCRi8ngVnnLVVellWTV69s",
@@ -66,7 +67,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const timestampSpan = document.createElement('span');
         timestampSpan.classList.add('timestamp');
-        timestampSpan.textContent = comment.timestamp;
+        // Convert Firestore timestamp to a human-readable date format
+        timestampSpan.textContent = comment.timestamp.toDate().toLocaleString();
 
         header.appendChild(avatar);
         header.appendChild(usernameSpan);
@@ -226,5 +228,3 @@ document.addEventListener('DOMContentLoaded', () => {
     // Call loadComments to load and display comments when the page loads
     loadComments();
 });
-
-
