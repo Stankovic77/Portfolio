@@ -122,11 +122,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         username: currentUser.username,
                         avatar: currentUser.avatar,
                         text: replyText,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp(), // Corrected timestamp usage
                         likes: 0,
                         dislikes: 0,
                         votes: []
                     };
+
                     // Update Firestore with the new reply
                     addReplyToFirestore(comment.id, reply);
                     comment.replies.push(reply); // Update local data
@@ -164,7 +165,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to add a reply to Firestore
     function addReplyToFirestore(commentId, reply) {
         db.collection('comments').doc(commentId).update({
-            replies: firebase.firestore.FieldValue.arrayUnion(reply)
+            replies: firebase.firestore.FieldValue.arrayUnion(reply),
+        })
+        .then(() => {
+            console.log('Reply added');
+        })
+        .catch((error) => {
+            console.error('Error adding reply: ', error);
         });
     }
 
@@ -220,4 +227,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Call loadComments to load and display comments when the page loads
     loadComments();
+});
+document.addEventListener('DOMContentLoaded', () => {
+    const modalCloseBtn = document.getElementById('modal-close-btn');
+    if (modalCloseBtn) {
+        modalCloseBtn.addEventListener('click', testimonialsModalFunc);
+    } else {
+        console.log('modalCloseBtn not found');
+    }
 });
