@@ -212,3 +212,41 @@ function showVoteMessage(commentDiv, message) {
         msg.remove();
     }, 2000); // Message disappears after 2 seconds
 }
+firebase.initializeApp(firebaseConfig);
+
+// Connect to Firestore
+const db = firebase.firestore();
+
+document.getElementById('commentForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+  
+    const username = document.getElementById('username').value;
+    const commentText = document.getElementById('commentText').value;
+  
+    await db.collection('comments').add({
+      username: username,
+      text: commentText,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  
+    document.getElementById('commentForm').reset();
+    loadComments();
+  });
+  
+  // Load and display comments
+  async function loadComments() {
+    const commentsDiv = document.getElementById('comments');
+    commentsDiv.innerHTML = '';
+  
+    const querySnapshot = await db.collection('comments').orderBy('timestamp', 'desc').get();
+  
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      const comment = document.createElement('div');
+      comment.innerHTML = `<strong>${data.username}</strong>: ${data.text}`;
+      commentsDiv.appendChild(comment);
+    });
+  }
+  
+  // Load comments on page load
+  loadComments();
