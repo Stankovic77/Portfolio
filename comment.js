@@ -214,5 +214,5 @@ const firebaseConfig = {
     projectId: "mycommentsapp-a08cf",
     storageBucket: "mycommentsapp-a08cf.appspot.com",
     messagingSenderId: "1:675866901297:web:9b8c64f9dbfcf90ce34e10",
-    appId: "APP_ID"
+    appId: "1:675866901297:web:9b8c64f9dbfcf90ce34e10"
 };
