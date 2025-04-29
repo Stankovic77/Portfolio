@@ -249,3 +249,43 @@ document.getElementById('commentForm').addEventListener('submit', async function
         });
       });
   }
+  const firebaseConfig = {
+    apiKey: "AIzaSyA-BlB4rTOEMiCRi8ngVnnLVVellWTV69s",
+    authDomain: "mycommentsapp-a08cf.firebaseapp.com",
+    projectId: "mycommentsapp-a08cf",
+    storageBucket: "mycommentsapp-a08cf.firebasestorage.app",
+    messagingSenderId: "1:675866901297:web:9b8c64f9dbfcf90ce34e10",
+    appId: "APP_ID"
+  };
+
+  const commentForm = document.getElementById('commentForm');
+  const commentsDiv = document.getElementById('comments');
+
+  commentForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const username = document.getElementById('username').value;
+    const commentText = document.getElementById('commentText').value;
+
+    await db.collection('comments').add({
+      username: username,
+      text: commentText,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    commentForm.reset();
+  });
+
+  // Load comments live
+  db.collection('comments')
+    .orderBy('timestamp', 'desc')
+    .onSnapshot((snapshot) => {
+      commentsDiv.innerHTML = '';
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const comment = document.createElement('div');
+        comment.innerHTML = `<strong>${data.username}</strong>: ${data.text}`;
+        commentsDiv.appendChild(comment);
+      });
+    });
+
+  firebase.initializeApp(firebaseConfig);
