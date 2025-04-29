@@ -233,20 +233,19 @@ document.getElementById('commentForm').addEventListener('submit', async function
     loadComments();
   });
   
-  // Load and display comments
-  async function loadComments() {
+  function loadComments() {
     const commentsDiv = document.getElementById('comments');
     commentsDiv.innerHTML = '';
   
-    const querySnapshot = await db.collection('comments').orderBy('timestamp', 'desc').get();
-  
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      const comment = document.createElement('div');
-      comment.innerHTML = `<strong>${data.username}</strong>: ${data.text}`;
-      commentsDiv.appendChild(comment);
-    });
+    db.collection('comments')
+      .orderBy('timestamp', 'desc')
+      .onSnapshot((querySnapshot) => {
+        commentsDiv.innerHTML = ''; // Clear comments every time to prevent duplicates
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          const comment = document.createElement('div');
+          comment.innerHTML = `<strong>${data.username}</strong>: ${data.text}`;
+          commentsDiv.appendChild(comment);
+        });
+      });
   }
-  
-  // Load comments on page load
-  loadComments();
