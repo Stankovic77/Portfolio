@@ -4,16 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const commentSection = document.getElementById('comment-section');
     const clearButton = document.getElementById('clear-comments');
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const modalCloseBtn = document.getElementById('modal-close-btn');
-        if (modalCloseBtn) {
-            modalCloseBtn.addEventListener('click', testimonialsModalFunc);
-        } else {
-            console.log('modalCloseBtn not found');
-        }
-    });
-
-    // Initialize Firestore
+    // Initialize Firebase and Firestore
     const firebaseConfig = {
         apiKey: "AIzaSyA-BlB4rTOEMiCRi8ngVnnLVVellWTV69s",
         authDomain: "mycommentsapp-a08cf.firebaseapp.com",
@@ -22,14 +13,10 @@ document.addEventListener('DOMContentLoaded', () => {
         messagingSenderId: "1:675866901297:web:9b8c64f9dbfcf90ce34e10",
         appId: "1:675866901297:web:9b8c64f9dbfcf90ce34e10"
     };
-    
-    // Initialize Firebase
+
     firebase.initializeApp(firebaseConfig);
-    
-    // Initialize Firestore after Firebase is initialized
     const db = firebase.firestore();
 
-    // Get the current user info from localStorage or create a new anonymous user
     let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
     let usernameCounter = parseInt(localStorage.getItem('usernameCounter')) || 100;
 
@@ -42,7 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('usernameCounter', usernameCounter);
     }
 
-    // Function to generate a random avatar
     function getRandomAvatar() {
         const randomText = Math.random().toString(36).substring(7);
         return `https://robohash.org/${randomText}?set=set1&size=50x50`;
@@ -67,8 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const timestampSpan = document.createElement('span');
         timestampSpan.classList.add('timestamp');
-        // Convert Firestore timestamp to a human-readable date format
-        timestampSpan.textContent = comment.timestamp.toDate().toLocaleString();
+        timestampSpan.textContent = comment.timestamp ? comment.timestamp.toDate().toLocaleString() : '';
 
         header.appendChild(avatar);
         header.appendChild(usernameSpan);
@@ -137,14 +122,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         username: currentUser.username,
                         avatar: currentUser.avatar,
                         text: replyText,
-                        timestamp: new Date().toLocaleString(),
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                         likes: 0,
                         dislikes: 0,
                         votes: []
                     };
-                    comment.replies.push(reply);
-                    updateCommentInFirestore(comment.id, comment);
-                    renderComments();
+                    // Update Firestore with the new reply
+                    addReplyToFirestore(comment.id, reply);
+                    comment.replies.push(reply); // Update local data
+                    renderComments();  // Re-render comments with the new reply
                 }
             });
         });
@@ -162,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
             repliesDiv.classList.add('replies');
             const sortedReplies = comment.replies.sort((a, b) => b.id - a.id);
             sortedReplies.forEach(reply => {
-                repliesDiv.appendChild(createCommentElement(reply, true));
+                repliesDiv.appendChild(createCommentElement(reply, true)); // Recursive rendering of replies
             });
             commentDiv.appendChild(repliesDiv);
         }
@@ -175,6 +161,13 @@ document.addEventListener('DOMContentLoaded', () => {
         db.collection('comments').doc(commentId).update(updatedComment);
     }
 
+    // Function to add a reply to Firestore
+    function addReplyToFirestore(commentId, reply) {
+        db.collection('comments').doc(commentId).update({
+            replies: firebase.firestore.FieldValue.arrayUnion(reply)
+        });
+    }
+
     // Function to load comments from Firestore
     function loadComments() {
         db.collection('comments')
@@ -184,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 snapshot.forEach((doc) => {
                     const comment = doc.data();
                     comment.id = doc.id;  // Add Firestore document ID
-                    commentSection.appendChild(createCommentElement(comment));
+                    commentSection.appendChild(createCommentElement(comment));  // Create and render each comment with replies
                 });
             });
     }
@@ -202,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 likes: 0,
                 dislikes: 0,
                 votes: [],
-                replies: []
+                replies: []  // Initialize replies as empty array
             };
 
             const docRef = await db.collection('comments').add(newComment);
