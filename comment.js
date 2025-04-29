@@ -4,18 +4,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const commentSection = document.getElementById('comment-section');
     const clearButton = document.getElementById('clear-comments');
     
-    let comments = JSON.parse(localStorage.getItem('comments')) || [];
+    const db = firebase.firestore(); // Firestore reference
+
+    // Fetch the current user from localStorage or create a new one
     let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
     let usernameCounter = parseInt(localStorage.getItem('usernameCounter')) || 100;
-    let votes = JSON.parse(localStorage.getItem('votes')) || {};
 
-    // Set a random avatar
-    function getRandomAvatar() {
-        const randomText = Math.random().toString(36).substring(7);
-        return `https://robohash.org/${randomText}?set=set1&size=50x50`;
-    }
-
-    // If no current user is set, create one
+    // If no current user, create an anonymous user
     if (!currentUser) {
         currentUser = {
             username: `Anonymous${usernameCounter++}`,
@@ -25,13 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('usernameCounter', usernameCounter);
     }
 
-    // Save comments and votes to localStorage
-    function saveComments() {
-        localStorage.setItem('comments', JSON.stringify(comments));
-    }
-
-    function saveVotes() {
-        localStorage.setItem('votes', JSON.stringify(votes));
+    // Function to generate a random avatar
+    function getRandomAvatar() {
+        const randomText = Math.random().toString(36).substring(7);
+        return `https://robohash.org/${randomText}?set=set1&size=50x50`;
     }
 
     // Function to create a comment element
@@ -69,11 +61,10 @@ document.addEventListener('DOMContentLoaded', () => {
         likeButton.innerHTML = `👍 ${comment.likes}`;
         likeButton.classList.add('like-btn');
         likeButton.addEventListener('click', () => {
-            if (!votes[comment.id]) {
+            if (!comment.votes.includes(currentUser.username)) {
                 comment.likes++;
-                votes[comment.id] = 'liked';
-                saveComments();
-                saveVotes();
+                comment.votes.push(currentUser.username);
+                updateCommentInFirestore(comment.id, comment);
                 renderComments();
             } else {
                 showVoteMessage(commentDiv, "You already voted!");
@@ -84,11 +75,10 @@ document.addEventListener('DOMContentLoaded', () => {
         dislikeButton.innerHTML = `👎 ${comment.dislikes}`;
         dislikeButton.classList.add('dislike-btn');
         dislikeButton.addEventListener('click', () => {
-            if (!votes[comment.id]) {
+            if (!comment.votes.includes(currentUser.username)) {
                 comment.dislikes++;
-                votes[comment.id] = 'disliked';
-                saveComments();
-                saveVotes();
+                comment.votes.push(currentUser.username);
+                updateCommentInFirestore(comment.id, comment);
                 renderComments();
             } else {
                 showVoteMessage(commentDiv, "You already voted!");
@@ -129,10 +119,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         timestamp: new Date().toLocaleString(),
                         likes: 0,
                         dislikes: 0,
-                        replies: []
+                        votes: []
                     };
                     comment.replies.push(reply);
-                    saveComments();
+                    updateCommentInFirestore(comment.id, comment);
                     renderComments();
                 }
             });
@@ -159,47 +149,48 @@ document.addEventListener('DOMContentLoaded', () => {
         return commentDiv;
     }
 
-    // Render all comments on the page
+    // Fetch comments from Firestore and render them
     function renderComments() {
-        commentSection.innerHTML = '';
-        const sortedComments = comments.sort((a, b) => b.id - a.id);
-        sortedComments.forEach(comment => {
-            commentSection.appendChild(createCommentElement(comment));
-        });
+        commentSection.innerHTML = ''; // Clear the section before re-rendering
+        db.collection('comments')
+            .orderBy('timestamp', 'desc')
+            .onSnapshot((querySnapshot) => {
+                querySnapshot.forEach(doc => {
+                    const data = doc.data();
+                    const comment = {
+                        ...data,
+                        id: doc.id // Include Firestore document ID
+                    };
+                    commentSection.appendChild(createCommentElement(comment));
+                });
+            });
     }
 
-    // Add a new comment
-    commentForm.addEventListener('submit', (e) => {
+    // Add a new comment to Firestore
+    commentForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const text = commentInput.value.trim();
         if (text !== '') {
             const newComment = {
-                id: Date.now(),
                 username: currentUser.username,
                 avatar: currentUser.avatar,
                 text: text,
-                timestamp: new Date().toLocaleString(),
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                 likes: 0,
                 dislikes: 0,
+                votes: [],
                 replies: []
             };
-            comments.push(newComment);
-            saveComments();
-            renderComments();
+
+            await db.collection('comments').add(newComment);
             commentInput.value = '';  // Clear the input field
         }
     });
 
-    // Clear all comments
-    clearButton.addEventListener('click', () => {
-        if (confirm('Are you sure you want to delete all comments?')) {
-            comments = [];
-            votes = {};
-            saveComments();
-            saveVotes();
-            renderComments();
-        }
-    });
+    // Update a comment in Firestore (e.g., after a like/dislike)
+    function updateCommentInFirestore(commentId, updatedComment) {
+        db.collection('comments').doc(commentId).update(updatedComment);
+    }
 
     // Display a message if the user has already voted
     function showVoteMessage(commentDiv, message) {
@@ -216,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 2000);
     }
 
-    // Initial render of comments when page loads
+    // Render comments when the page loads (fetch from Firestore)
     renderComments();
 });
 
