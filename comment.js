@@ -1,236 +1,182 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const commentForm = document.getElementById('comment-form');
-    const commentInput = document.getElementById('comment-input');
-    const commentSection = document.getElementById('comment-section');
-    const clearButton = document.getElementById('clear-comments');
+document.addEventListener('DOMContentLoaded', async () => {
+  const chatForm = document.getElementById('comment-form');
+  const chatInput = document.getElementById('comment-input');
+  const chatSection = document.getElementById('comment-section');
+  const userCountDisplay = document.getElementById('user-count');
+  const typingIndicator = document.createElement('div');
+  typingIndicator.id = 'typing-indicator';
+  typingIndicator.textContent = '';
+  chatSection.parentNode.insertBefore(typingIndicator, chatSection.nextSibling);
 
-    // Initialize Firebase and Firestore
-    const firebaseConfig = {
-        apiKey: "AIzaSyA-BlB4rTOEMiCRi8ngVnnLVVellWTV69s",
-        authDomain: "mycommentsapp-a08cf.firebaseapp.com",
-        projectId: "mycommentsapp-a08cf",
-        storageBucket: "mycommentsapp-a08cf.appspot.com",
-        messagingSenderId: "1:675866901297:web:9b8c64f9dbfcf90ce34e10",
-        appId: "1:675866901297:web:9b8c64f9dbfcf90ce34e10"
+  const firebaseConfig = {
+    apiKey: "AIzaSyBUKFgaCvyGsP8lGJzshhzJAhY23FKmUKI",
+    authDomain: "chat-room-c8efa.firebaseapp.com",
+    projectId: "chat-room-c8efa",
+    storageBucket: "chat-room-c8efa.appspot.com",
+    messagingSenderId: "393069733561",
+    appId: "1:393069733561:web:f30167e3876fcdf2fe1d68"
+  };
+
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+  let usernameCounter = parseInt(localStorage.getItem('usernameCounter')) || 100;
+
+  if (!currentUser) {
+    currentUser = {
+      username: `Guest${usernameCounter++}`,
+      avatar: getRandomAvatar()
     };
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    localStorage.setItem('usernameCounter', usernameCounter);
+  }
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+  let sessionId = localStorage.getItem('sessionId');
+  if (!sessionId) {
+    sessionId = `${currentUser.username}_${Date.now()}`;
+    localStorage.setItem('sessionId', sessionId);
+  }
 
-    let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
-    let usernameCounter = parseInt(localStorage.getItem('usernameCounter')) || 100;
+  function getRandomAvatar() {
+    const rand = Math.random().toString(36).substring(7);
+    return `https://robohash.org/${rand}?set=set1&size=50x50`;
+  }
 
-    if (!currentUser) {
-        currentUser = {
-            username: `Anonymous${usernameCounter++}`,
-            avatar: getRandomAvatar()
-        };
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-        localStorage.setItem('usernameCounter', usernameCounter);
-    }
+  async function addOrUpdateUser() {
+    const userRef = db.collection('usersOnline').doc(sessionId);
+    await userRef.set({
+      username: currentUser.username,
+      avatar: currentUser.avatar,
+      lastActive: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  }
 
-    function getRandomAvatar() {
-        const randomText = Math.random().toString(36).substring(7);
-        return `https://robohash.org/${randomText}?set=set1&size=50x50`;
-    }
+  async function removeUserFromOnline() {
+    const userRef = db.collection('usersOnline').doc(sessionId);
+    await userRef.delete();
+  }
 
-    // Function to create a comment element
-    function createCommentElement(comment, isReply = false) {
-        const commentDiv = document.createElement('div');
-        commentDiv.classList.add(isReply ? 'reply' : 'comment');
+  function listenForUserCount() {
+    db.collection('usersOnline').onSnapshot(snapshot => {
+      const now = Date.now();
+      const activeUsers = snapshot.docs.filter(doc => {
+        const lastActive = doc.data().lastActive?.toDate();
+        return lastActive && (now - lastActive.getTime() < 2 * 60 * 1000);
+      });
+      userCountDisplay.textContent = `${activeUsers.length} `;
+    });
+  }
 
-        const header = document.createElement('div');
-        header.classList.add('comment-header');
+  function playNotificationSound() {
+    const audio = new Audio('https://notificationsounds.com/storage/sounds/file-sounds-1152-pristine.mp3');
+    audio.play().catch(err => {
+      console.log("Sound playback prevented until user interacts:", err);
+    });
+  }
 
-        const avatar = document.createElement('img');
-        avatar.src = comment.avatar;
-        avatar.alt = 'Avatar';
-        avatar.classList.add('avatar');
+  function createMessageElement(msg, id) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'chat-message';
+    wrapper.id = id;
 
-        const usernameSpan = document.createElement('span');
-        usernameSpan.classList.add('username');
-        usernameSpan.textContent = comment.username;
+    const avatar = document.createElement('img');
+    avatar.src = msg.avatar;
+    avatar.className = 'avatar';
 
-        const timestampSpan = document.createElement('span');
-        timestampSpan.classList.add('timestamp');
-        timestampSpan.textContent = comment.timestamp ? comment.timestamp.toDate().toLocaleString() : '';
+    const content = document.createElement('div');
+    content.className = 'message-content';
 
-        header.appendChild(avatar);
-        header.appendChild(usernameSpan);
-        header.appendChild(timestampSpan);
+    const header = document.createElement('div');
+    header.className = 'message-header';
 
-        const content = document.createElement('p');
-        content.textContent = comment.text;
+    const username = document.createElement('strong');
+    username.className = 'username';
+    username.textContent = msg.username;
 
-        const actions = document.createElement('div');
-        actions.classList.add('actions');
+    const timestamp = document.createElement('span');
+    timestamp.className = 'timestamp';
+    timestamp.textContent = msg.timestamp
+      ? msg.timestamp.toDate().toLocaleTimeString()
+      : '';
 
-        const likeButton = document.createElement('button');
-        likeButton.innerHTML = `👍 ${comment.likes}`;
-        likeButton.classList.add('like-btn');
-        likeButton.addEventListener('click', () => {
-            if (!comment.votes.includes(currentUser.username)) {
-                comment.likes++;
-                comment.votes.push(currentUser.username);
-                updateCommentInFirestore(comment.id, comment);
-            } else {
-                showVoteMessage(commentDiv, "You already voted!");
-            }
-        });
+    header.append(username, timestamp);
 
-        const dislikeButton = document.createElement('button');
-        dislikeButton.innerHTML = `👎 ${comment.dislikes}`;
-        dislikeButton.classList.add('dislike-btn');
-        dislikeButton.addEventListener('click', () => {
-            if (!comment.votes.includes(currentUser.username)) {
-                comment.dislikes++;
-                comment.votes.push(currentUser.username);
-                updateCommentInFirestore(comment.id, comment);
-            } else {
-                showVoteMessage(commentDiv, "You already voted!");
-            }
-        });
+    const text = document.createElement('p');
+    text.className = 'message-text';
+    text.textContent = `${msg.username}: ${msg.text}`;
 
-        const replyButton = document.createElement('button');
-        replyButton.textContent = 'Reply';
-        replyButton.classList.add('reply-btn');
-        replyButton.addEventListener('click', () => {
-            if (commentDiv.querySelector('.reply-form')) return;
+    const replyBtn = document.createElement('button');
+    replyBtn.textContent = 'Reply';
+    replyBtn.onclick = () => handleReply(id);
 
-            const replyForm = document.createElement('form');
-            replyForm.classList.add('reply-form');
+    content.append(header, text, replyBtn);
+    wrapper.append(avatar, content);
+    return wrapper;
+  }
 
-            const replyInput = document.createElement('input');
-            replyInput.type = 'text';
-            replyInput.placeholder = 'Write a reply...';
-            replyInput.required = true;
-
-            const sendReplyButton = document.createElement('button');
-            sendReplyButton.type = 'submit';
-            sendReplyButton.textContent = 'Send';
-
-            replyForm.appendChild(replyInput);
-            replyForm.appendChild(sendReplyButton);
-            commentDiv.appendChild(replyForm);
-
-            replyForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const replyText = replyInput.value.trim();
-                if (replyText) {
-                    const reply = {
-                        username: currentUser.username,
-                        avatar: currentUser.avatar,
-                        text: replyText,
-                        likes: 0,
-                        dislikes: 0,
-                        votes: []
-                    };
-
-                    // First step: Add the reply to Firestore without the timestamp
-                    addReplyToFirestore(comment.id, reply)
-                        .then(() => {
-                            // Second step: After adding the reply, update the timestamp for that specific reply
-                            updateReplyTimestamp(comment.id, reply);
-                        });
-
-                    comment.replies.push(reply);  // Update local data
-                    renderComments();  // Re-render comments with the new reply
-                }
-            });
-        });
-
-        actions.appendChild(likeButton);
-        actions.appendChild(dislikeButton);
-        actions.appendChild(replyButton);
-
-        commentDiv.appendChild(header);
-        commentDiv.appendChild(content);
-        commentDiv.appendChild(actions);
-
-        if (comment.replies && comment.replies.length > 0) {
-            const repliesDiv = document.createElement('div');
-            repliesDiv.classList.add('replies');
-            const sortedReplies = comment.replies.sort((a, b) => b.timestamp - a.timestamp);  // Sort replies by timestamp
-            sortedReplies.forEach(reply => {
-                repliesDiv.appendChild(createCommentElement(reply, true));  // Recursive rendering of replies
-            });
-            commentDiv.appendChild(repliesDiv);
+  function loadChatMessages() {
+    db.collection('chatroom').orderBy('timestamp').onSnapshot(snap => {
+      chatSection.innerHTML = '';
+      snap.docChanges().forEach(change => {
+        if (change.type === 'added') {
+          playNotificationSound();
         }
+      });
+      snap.forEach(docSnap => {
+        chatSection.append(createMessageElement(docSnap.data(), docSnap.id));
+      });
+      chatSection.scrollTop = chatSection.scrollHeight;
+    });
+  }
 
-        return commentDiv;
-    }
+  chatForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const text = chatInput.value.trim();
+    if (!text) return;
 
-    // Function to update the comment in Firestore
-    function updateCommentInFirestore(commentId, updatedComment) {
-        db.collection('comments').doc(commentId).update(updatedComment);
-    }
-
-    // Function to add a reply to Firestore (without timestamp)
-    function addReplyToFirestore(commentId, reply) {
-        return db.collection('comments').doc(commentId).update({
-            replies: firebase.firestore.FieldValue.arrayUnion(reply)
-        });
-    }
-
-    // Function to update the reply's timestamp after adding the reply
-    function updateReplyTimestamp(commentId, reply) {
-        db.collection('comments').doc(commentId).update({
-            'replies.$[elem].timestamp': firebase.firestore.FieldValue.serverTimestamp()
-        }, {
-            arrayFilterElements: [{ fieldPath: "replies.username", arrayContains: reply.username }]
-        });
-    }
-
-    // Function to load comments from Firestore
-    function loadComments() {
-        db.collection('comments')
-            .orderBy('timestamp', 'desc')
-            .onSnapshot((snapshot) => {
-                commentSection.innerHTML = '';  // Clear current comments
-                snapshot.forEach((doc) => {
-                    const comment = doc.data();
-                    comment.id = doc.id;  // Add Firestore document ID
-                    commentSection.appendChild(createCommentElement(comment));  // Create and render each comment with replies
-                });
-            });
-    }
-
-    // Function to add a new comment
-    commentForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const text = commentInput.value.trim();
-        if (text !== '') {
-            const newComment = {
-                username: currentUser.username,
-                avatar: currentUser.avatar,
-                text: text,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                likes: 0,
-                dislikes: 0,
-                votes: [],
-                replies: []  // Initialize replies as empty array
-            };
-
-            const docRef = await db.collection('comments').add(newComment);
-            commentInput.value = '';  // Clear the input field
-        }
+    await db.collection('chatroom').add({
+      username: currentUser.username,
+      avatar: currentUser.avatar,
+      text,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    // Display a message if the user has already voted
-    function showVoteMessage(commentDiv, message) {
-        let existingMsg = commentDiv.querySelector('.vote-message');
-        if (existingMsg) return;
+    chatInput.value = '';
+    db.collection('typingStatus').doc(sessionId).delete();
+  });
 
-        const msg = document.createElement('div');
-        msg.classList.add('vote-message');
-        msg.textContent = message;
-        commentDiv.appendChild(msg);
+  chatInput.addEventListener('input', () => {
+    db.collection('typingStatus').doc(sessionId).set({
+      username: currentUser.username,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  });
 
-        setTimeout(() => {
-            msg.remove();
-        }, 2000);
+  db.collection('typingStatus').onSnapshot(snapshot => {
+    const now = Date.now();
+    const activeTypers = snapshot.docs.filter(doc => {
+      const data = doc.data();
+      const lastTyped = data.timestamp?.toDate();
+      return lastTyped && (now - lastTyped.getTime() < 5000) && data.username !== currentUser.username;
+    });
+
+    if (activeTypers.length > 0) {
+      typingIndicator.textContent = `${activeTypers.map(u => u.data().username).join(', ')} is typing...`;
+    } else {
+      typingIndicator.textContent = '';
     }
+  });
 
-    // Call loadComments to load and display comments when the page loads
-    loadComments();
+  await addOrUpdateUser();
+  listenForUserCount();
+  window.addEventListener('beforeunload', removeUserFromOnline);
+  loadChatMessages();
+
+  // Ensure sound can be played after user interaction
+  document.body.addEventListener('click', () => {
+    const audio = new Audio('https://notificationsounds.com/storage/sounds/file-sounds-1152-pristine.mp3');
+    audio.volume = 0; // inaudible sound to unlock audio permissions
+    audio.play().catch(() => {});
+  });
 });

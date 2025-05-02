@@ -82,7 +82,9 @@ input, textarea {
 
 :focus { outline-color: var(--mycolor); }
 
-html { font-family: var(--ff-poppins); }
+html { font-family: var(--ff-poppins); 
+    overflow-y: scroll;
+    scrollbar-color: var(--eerie-black2) var(--mycolor);}
 
 body { background: var(--smoky-black); }
 
@@ -90,6 +92,7 @@ main {
     margin: 15px 12px;
     margin-bottom: 75px;
     min-width: 259px;
+    
 }
 
 .sidebar, article {
@@ -394,13 +397,15 @@ a:-webkit-any-link {
     color: var(--light-gray);
     font-size: var(--fs6);
     font-weight: var(--fw300);
-    line-height: 1.6;
+    line-height: 1.8;
 }
 
     .about-text p { 
         margin-bottom: 15px;
-        padding-left: 10px;
-        padding-right: 10px;
+        padding-left: 20px;
+        padding-top: 6px;
+        padding-right: 20px;
+        padding-bottom: 6px;
      }
 
 .service { margin-bottom: 35px; }
@@ -1146,7 +1151,7 @@ textarea.form-input {
     .navbar-link { --fs8: 14px; }
 
     .about .article-title { margin-bottom: 20px; }
-    .about-text { margin-bottom: 40px; }
+    .about-text { margin-bottom: 5px; }
 
     .service-item {
         display: flex;
@@ -1502,230 +1507,281 @@ h6 {
   }
 
 
-  
-  
-  .container {
-    max-width: 1000px;
-    margin: auto;
-    background: (--bg-gradient-onyx);
-    border-radius: 2px;
+  .attribution { 
+    font-size: 11px;
+    text-align: center; 
+    color: var(--mycolor);
+    padding: 8px;
+    border-radius: 8px;
+    border: 3px solid #4acf81;
+    margin-top: 10px;
+    margin-left: 300px;
+    width: 18%;
+    position: center;
+
   }
   
-  #comment-form {
+  .attribution a { 
+    color: var(--mycolor);
+    font-weight: bold;
+
+  }
+  
+  /* Existing Styles */
+
+
+
+
+
+/* Chat Container */
+.chat-container {
     display: flex;
     flex-direction: column;
+    width: 180%;
+    max-width: 100%;
+    height: 120vh;
+    background-color: var(--eerie-black2);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(192, 185, 185, 0.1);
+}
+
+.chat-section {
+    max-height: 100%;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
+
+.chat-message {
+    position: relative;
+    padding: 10px;
+    margin-bottom: 10px;
+    background: var(--eerie-black1);
+    border-radius: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.chat-message .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.message-content {
+    flex: 1;
+    color: var(--mycolor);
+    position: relative;
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9em;
+    margin-bottom: 4px;
+}
+
+.username {
+    font-weight: bold;
+}
+
+.timestamp {
+    font-size: 0.75em;
+    color: #888;
+}
+
+.message-text {
+    margin: 0 0 20px 0;
+    word-wrap: break-word;
+}
+
+.message-content button {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    font-size: 0.7em;
+    padding: 2px 6px;
+    background-color: #e0e0e0;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.message-content button:hover {
+    background-color:var(--eerie-black1);
+}
+
+.timestamp {
+    font-size: 0.75em;
+    color: #888;
+}
+
+.message-actions {
+    display: flex;
     gap: 8px;
+    margin-top: 6px;
+}
+
+.message-actions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 6px;
+}
+
+.message-text {
+    margin: 0 0 20px 0;
+}
+
+.message-content button {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    font-size: 0.7em;
+    padding: 2px 6px;
+    background-color: var(--mycolor);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.message-content button:hover {
+    background-color: var(--eerie-black1);
+    color: var(--mycolor);
+}
+
+/* Chat Form */
+.chat-form input[type="text"] {
+    font-size: 0.9rem;
+}
+
+.chat-form button {
+    padding: 4px 8px;
+    margin-right: 2px;
+    vertical-align: middle;
+    background-color: var(--mycolor);
+    color: var(--eerie-black1);
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-left: 10px;
+    margin-top: 20px;
+}
+
+/* Responsive Styles */
+@media (max-width: 600px) {
+    .chat-container {
+        padding: 10px;
+    }
+
+    #comment-input {
+        font-size: 14px;
+        padding: 8px;
+    }
+
+    .send-btn {
+        padding: 20px 12px;
+    }
+}
+
+/* Chat Input */
+.chat-form {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-top: auto;
+  
+}
+
+.input-container {
+    display: flex;                     /* Use flexbox for horizontal alignment */
+    align-items: center;               /* Vertically center the input and button */
+              /* Ensure that both elements are horizontally centered */
+    width: 100%;
+    gap: 10px;                         /* Add space between input and button */
   }
   
   #comment-input {
-    padding: 20px;
-    border-radius: 5px;
-    border: 3px solid #4acf81;
-    resize: vertical;
-    min-height: 60px;
-    min-width: 780px;
-    color: #4acf81;
-    
+    width: 80%;                        /* The input field takes 80% of the container width */
+    padding: 10px 15px;
+    font-size: 14px;
+    border-radius: 10px;
+    color:var(--mycolor);
+    box-sizing: border-box;
   }
   
-  #comment-form button {
-    padding: 10px;
-    width: 140px;
-    background-color: #4acf81;
-    color: white;
-    font-weight: bold;
+  .send-btn {
+    background-color: var(--mycolor);
+    color: var(--eerie-black2);
     border: none;
-    border-radius: 5px;
+    border-radius: 50%;
+    padding: 10px 25px;
     cursor: pointer;
-  }
-  
-  #comment-form button:hover {
-    background-color: #45a049;
-  }
-  
-  .clear-btn {
-    margin-top: 10px;
-    background-color: #ff4d4d;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-  }
-  
-  .clear-btn:hover {
-    background-color: #e60000;
-  }
-  
-  .comment, .reply {
-    color: #4acf81;
-    padding: 15px;
-    border-radius: 8px;
-    border: 3px solid #4acf81;
-    margin-top: 20px;
-    width: 100%;
-    position: relative;
-  }
-  
-  .comment-header {
+    font-size: 14px;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    
-  }
-  
-  .avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 100%;
-    border: 3px solid #4acf81;
-    margin-right: 2px;
-  }
-  
-  .username {
-    font-weight: bold;
-    margin-right: auto;
-    margin-left: 2px;
-  }
-  
-  .timestamp {
-    font-size: 0.8em;
-    color: #4acf81;
-    white-space: nowrap;
-  }
-  
-  .actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 10px;
-  }
-  
-  .actions button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #4acf81;
-    margin-bottom: 10px;
-    font-size: 16px;
-  }
-  
-  .replies {
-    margin-left: 40px;
-    margin-top: 10px;
-  }
-  
-  .reply-form {
-    margin-top: 10px;
-    display: flex;
-    gap: 8px;
-  }
-  
-  .reply-form input {
-    flex-grow: 1;
-    padding: 6px;
-    border-radius: 5px;
-    border: 1px (solid #4acf81);
-    color: #4acf81;
-  }
-  
-  .reply-form button {
-    background-color: #4acf81;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .reply-form button:hover {
-    background-color: #45a049;
-  }
-  
-  /* Responsive */
-  @media (max-width: 600px) {
-    .comment-header {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-    .actions {
-      justify-content: flex-start;
-    }
-  }
-  .vote-message {
-    color: red;
-    font-size: 0.8rem;
-    margin-top: 5px;
+    justify-content: center;           /* Center the button's content */
+    align-items: center;               /* Vertically center the content */
+    height: 40px;                      /* Set a fixed height for the button */
+    width: 60px;                 /* Set a fixed width for the button */
     text-align: center;
+    transform: translateY(-12px);
+    
+  }
+  
+  .green-dot {
+                     /* Position it relative to the container */
+                            /* Center it vertically */
+   margin-left: 2%;  /* Position it a bit to the right of the button */
+    width: 5px;                    /* Dot size */
+    height: 5px;                      /* Dot size */
+    background-color: green;            /* Green color */
+    border-radius: 50%;                 /* Circular shape */
+    transform: translateY(-50%);        /* Adjust for perfect vertical centering */
+  }
+
+  /* Responsive styles */
+  @media (max-width: 600px) {
+    #comment-input {
+      width: 70%;                      /* Slightly smaller input field on mobile */
+    }
+  
+    .send-btn {
+      padding: 10px 20px;              /* Adjust button size on mobile */
+      height: 35px;                    /* Adjust height on mobile */
+      width: 35px;                     /* Adjust width on mobile */
+      transform: translateY(-5px);     /* Keep the 5px upward shift on mobile */
+    }
+  }
+
+.send-btn:hover {
+    background-color: var(--eerie-black1);
+    color:var(--mycolor);
 }
-@media screen and (max-width: 768px) {
-    .comment-section {
+
+/* Mobile Styles */
+@media (max-width: 600px) {
+    .chat-container {
         padding: 10px;
     }
 
-    .comment, .reply {
-        width: 100%;
-        max-width: 100%;
+    #comment-input {
+        font-size: 14px;
+        padding: 8px;
     }
 
-    .avatar {
-        width: 30px;
-        height: 30px;
-    }
-
-    .username {
-        font-size: 1.1em;
-    }
-
-    .timestamp {
-        font-size: 0.7em;
-    }
-
-    .actions button {
-        padding: 8px 16px;
-        font-size: 0.9em;
-    }
-
-    .reply-form input {
-        width: 80%;
-        padding: 10px;
-        margin-right: 10px;
-    }
-
-    .reply-form button {
-        padding: 10px 20px;
-        font-size: 1em;
+    .send-btn {
+        padding: 20px 12px;
     }
 }
 
-/* Mobile Styles for very small screens (like phones in portrait mode) */
-@media screen and (max-width: 480px) {
-    .comment-header {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .timestamp {
-        margin-top: 5px;
-    }
-
-    .actions {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .actions button {
-        width: 100%;
-        margin-bottom: 5px;
-    }
-
-    .reply-form input {
-        width: 100%;
-        margin-bottom: 10px;
-    }
+#user-count {
+    bottom: 40px;
+    left: 40px;
+    
+    margin-bottom: 1%;
+    font-size: 14px;
+    color: var(--mycolor);
 }
+

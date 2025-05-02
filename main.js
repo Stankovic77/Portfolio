@@ -13,7 +13,6 @@ sidebarBtn.addEventListener("click", function() {elementToggleFunc(sidebar); })
 
 const testimonialsItem = document.querySelectorAll('[data-testimonials-item]');
 const modalContainer = document.querySelector('[data-modal-container]');
-const modalCloseBtn = document.querySelector('[data-modal-close-btn]');
 const overlay = document.querySelector('[data-overlay]');
 
 const modalImg = document.querySelector('[data-modal-img]');
@@ -36,10 +35,7 @@ for (let i = 0; i < testimonialsItem.length; i++) {
     })
 }
 
-//Activating close button in modal-testimonial
 
-modalCloseBtn.addEventListener('click', testimonialsModalFunc);
-overlay.addEventListener('click', testimonialsModalFunc);
 
 //Activating Filter Select and filtering options
 
@@ -48,7 +44,7 @@ const selectItems = document.querySelectorAll('[data-select-item]');
 const selectValue = document.querySelector('[data-select-value]');
 const filterBtn = document.querySelectorAll('[data-filter-btn]');
 
-select.addEventListener('click', function () {elementToggleFunc(this); });
+
 
 for(let i = 0; i < selectItems.length; i++) {
     selectItems[i].addEventListener('click', function() {
