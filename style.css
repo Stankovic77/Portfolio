@@ -1526,9 +1526,10 @@ h6 {
     padding: 8px;
     border-radius: 8px;
     border: 3px solid #4acf81;
-    margin-top: 10px;
-    margin-left: 300px;
-    width: 18%;
+    margin-top: 2px;
+    margin-left: 200px;
+    
+    width: fit-content;
     position: center;
 
   }
@@ -1776,7 +1777,7 @@ h6 {
         width: 100px;       
         right: 20px;  
         margin-right: 120px; 
-        margin-left: 350px;       
+        margin-left: 340px;       
         margin-bottom: 100px;    /* Slightly smaller input field on mobile */
       }
    }
