@@ -1769,7 +1769,17 @@ h6 {
       transform: translateY(-5px);     /* Keep the 5px upward shift on mobile */
     }
   }
-
+  @media (min-width: 450px) {
+    .attribution {
+        padding:10px 20px;
+        transform: translateY(-5px); 
+        width: 100px;       
+        right: 20px;  
+        margin-right: 80px; 
+        margin-left: 200px;       
+        margin-bottom: 100px;    /* Slightly smaller input field on mobile */
+      }
+   }
  @media (max-width: 600px) {
     .attribution {
       padding:10px 20px;
