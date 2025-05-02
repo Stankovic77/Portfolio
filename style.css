@@ -98,6 +98,7 @@ main {
 .sidebar, article {
     background: var(--eerie-black2);
     border: 1px solid var(--jet);
+    border:2px solid var(--mycolor);
     border-radius: 20px;
     box-shadow: var(--shadow1);
     z-index: 1;
@@ -702,7 +703,7 @@ a:-webkit-any-link {
 
 .skills-title { margin-bottom: 20px; }
 
-.skills-list { padding: 20px; }
+.skills-list { padding: 20px; border:2px solid var(--mycolor); }
 
 .skills-item:not(:last-child) {margin-bottom: 15px; }
 
@@ -801,6 +802,8 @@ a:-webkit-any-link {
 
     .project-item.active {
         display: block;
+        border:2px solid var(--mycolor);
+        border-radius: 18px;
         animation: scaleUp .25s ease forwards;
     }
 
@@ -1542,6 +1545,7 @@ h6 {
     height: 120vh;
     background-color: var(--eerie-black2);
     border-radius: 10px;
+    border:2px solid var(--mycolor);
     overflow: hidden;
     box-shadow: 0 0 20px rgba(192, 185, 185, 0.1);
 }
@@ -1550,6 +1554,7 @@ h6 {
     max-height: 100%;
     overflow-y: auto;
     margin-bottom: 10px;
+    
 }
 
 .chat-message {
@@ -1561,6 +1566,7 @@ h6 {
     display: flex;
     align-items: flex-start;
     gap: 10px;
+    border:2px solid var(--mycolor);
 }
 
 .chat-message .avatar {
