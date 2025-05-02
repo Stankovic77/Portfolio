@@ -234,6 +234,7 @@ article { display: none; }
     display: flex;
     justify-content: flex-start;
     align-items: center;
+    
     gap: 15px;
 }
 
@@ -241,12 +242,14 @@ article { display: none; }
 
 .avatar-box {
     background: var(--bg-gradient-onyx);
-    border-radius: 20px;
+    border-radius: 10px;
+    border:2px solid var(--mycolor);
 }
 
 .info-content .name {
     color: var(--mycolor);
     font-size: var(--fs3);
+    
     font-weight: var(--fw500);
     letter-spacing: -0.25px;
     margin-bottom: 10px;
@@ -257,6 +260,7 @@ article { display: none; }
     background: var(--onyx);
     font-size: var(--fs8);
     font-weight: var(--fw300);
+    border:2px solid var(--mycolor);
     width: max-content;
     padding: 3px 12px;
     border-radius: 8px;
@@ -310,6 +314,7 @@ article { display: none; }
 
 .contact-item {
     min-width: 100%;
+    
     display: flex;
     align-items: center;
     gap: 16px;
@@ -322,6 +327,7 @@ article { display: none; }
 
     .contact-info :is(.contact-link, time, address) {
         color: var(--white1);
+        
         font-size: var(--fs7);
     }
 
@@ -332,16 +338,19 @@ article { display: none; }
     font-size: var(--fs8);
     text-transform: uppercase;
     margin-bottom: 2px;
+    
 }
 
 a:-webkit-any-link {
     color: var(--white1);
+    
 }
 
 .social-list {
     display: flex;
     justify-content: flex-start;
     align-items: center;
+    
     gap: 15px;
     padding-bottom: 4px;
     padding-left: 7px;
