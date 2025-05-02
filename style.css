@@ -1770,6 +1770,19 @@ h6 {
     }
   }
 
+ @media (max-width: 600px) {
+    .attribution {
+      padding:10px 20px;
+      transform: translateY(-5px); 
+      width: 100px;       
+      right: 20px;  
+      margin-right: 80px; 
+      margin-left: 200px;       
+      margin-bottom: 100px;    /* Slightly smaller input field on mobile */
+    }
+ }
+
+
 .send-btn:hover {
     background-color: var(--eerie-black1);
     color:var(--mycolor);
